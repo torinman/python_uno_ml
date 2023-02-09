@@ -37,15 +37,16 @@ def deal(cards=7, players=4):
         hands.append([])
         for card in range(cards):
             draw_card(hand, cont=False)
+    play_card(current_player, deck[-1], check=False, colour=random.choice(["r", "y", "g", "b"]))
 
 
 def play_card(player, card, check=True, colour=""):
     global pile, hands, order_of_play, current_player, no_of_players, current_colour
     if determine_playable(player, card) or not check:
         pile.append(card)
-        try:
+        if check:
             hands[player].remove(card)
-        except ValueError:
+        else:
             deck.remove(card)
         if list(card)[0] != "w":
             current_colour = list(card)[0]
