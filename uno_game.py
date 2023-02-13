@@ -69,7 +69,7 @@ def play_card(player, card, check=True, colour=""):
             if list(card)[1] == "+":
                 for i in range(4):
                     draw_card(player + 1, cont=False)
-        current_player += 1
+        current_player = player + 1
         if current_player >= no_of_players:
             current_player = 0
     else:
