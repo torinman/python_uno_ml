@@ -22,11 +22,11 @@ def create_deck():
     for colour in colours:
         deck.append(colour + "0")
         for number in range(1, 10, 1):
-            deck += 2 * [colour + str(number)]
+            deck += 2 * [colour + str(number)]  # number cards
         for special in specials:
-            deck += 2 * [colour + special]
-    deck += 4 * ["ww"]
-    deck += 4 * ["w+"]
+            deck += 2 * [colour + special]  # special cards
+    deck += 4 * ["ww"]  # wild cards
+    deck += 4 * ["w+"]  # Wild +4 cards
     random.shuffle(deck)
 
 
