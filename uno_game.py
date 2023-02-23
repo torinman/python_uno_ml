@@ -1,43 +1,49 @@
-import random
+import random  # Random is required for shuffling of the deck
 
-deck = []
-hands = []
-pile = []
+deck = []  # The pile of cards to draw from/deal
+hands = []  # The cards each player is holding in their hand
+pile = []  # The pile of most recently played cards
 
-no_of_players = 4
-current_player = 3
-order_of_play = 1  # clockwise
-current_colour = "r"
-
-
-class NoMoreCardsError(Exception):
-    pass
+no_of_players = 4  # How many players in the game.
+order_of_play = 1  # The order of play. 1 means clockwise and -1 means anticlockwise.
+current_colour = ""  # The colour of the card most recently played.
+current_player = 3  # The index of the current player.
+# Starts at 3 because of the way that the card off the top of the deck is technically "played" by the dealer.
 
 
-def create_deck():
-    global deck
-    deck = []
-    colours = ["r", "y", "g", "b"]
-    specials = ["r", "s", "+"]
-    for colour in colours:
-        deck.append(colour + "0")
-        for number in range(1, 10, 1):
-            deck += 2 * [colour + str(number)]  # number cards
-        for special in specials:
-            deck += 2 * [colour + special]  # special cards
-    deck += 4 * ["ww"]  # wild cards
-    deck += 4 * ["w+"]  # Wild +4 cards
-    random.shuffle(deck)
+class NoMoreCardsError(Exception):  # Define the exception used if there are no more cards left in the deck.
+    # I might make this transfer all the cards in the pile to the deck first later on.
+    pass  # No action is required so nothing is done
 
 
-def deal(cards=7, players=4):
-    global deck, hands
-    hands = []
-    for hand in range(players):
-        hands.append([])
-        for card in range(cards):
-            draw_card(hand, cont=False)
-    play_card(current_player, deck[-1], check=False, colour=random.choice(["r", "y", "g", "b"]))
+def create_deck():  # Define a function to generate the cards in the game
+    global deck  # Use the global variable deck to store all the cards in
+    deck = []  # Reset the deck to empty
+    colours = ["r", "y", "g", "b"]  # The four colours in the game are red, yellow, green and blue
+    specials = ["r", "s", "+"]  # The colour cards that aren't numbered are reverse, skip and draw 2
+    for colour in colours:  # Cycle through all the colours.
+        deck.append(colour + "0")  # Add a zero card for each colour
+        for number in range(1, 10, 1):  # For every colour, cycle through every number except for zero
+            deck += 2 * [colour + str(number)]  # Add two of every number card
+        for special in specials:  # For every colour, cycle through every special colour card
+            deck += 2 * [colour + special]  # Add two of every special colour card
+    deck += 4 * ["ww"]  # Add four wild cards
+    deck += 4 * ["w+"]  # Add four wild draw 4 cards
+    random.shuffle(deck)  # Shuffle the complete deck
+
+
+def deal(cards=7, players=4):  # Define a function to deal cards to every player. Default four players with seven cards
+    global deck, hands  # Use the global variables deck and hands to source the cards and store what each player has
+    hands = []  # Make sure that no players already have cards
+    if cards * players >= len(deck):
+        raise NoMoreCardsError("There are not enough cards to play")
+    for hand in range(players):  # Repeat for every player
+        hands.append([])  # Clear the player's current hand
+        for card in range(cards):  # Repeat for every card
+            draw_card(hand, cont=False)  # Add a card to the players hand
+    play_card(current_player, deck[-1], check=False, colour=random.choice(["r", "y", "g", "b"])) \
+        # Put the top card of the deck on the face-up pile. Don't check whether card can be played because it is first
+        # The colour to use in case of a wild card is randomly determined
 
 
 def play_card(player, card, check=True, colour=""):
