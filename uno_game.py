@@ -41,14 +41,11 @@ def deal(cards=7, players=4):  # Define a function to deal cards to every player
         hands.append([])  # Clear the player's current hand
         for card in range(cards):  # Repeat for every card
             draw_card(hand, cont=False)  # Add a card to the players hand
-    play_card(current_player, deck[-1], check=False, colour=random.choice(["r", "y", "g", "b"])) \
-        # Put the top card of the deck on the face-up pile. Don't check whether card can be played because it is first
-        # The colour to use in case of a wild card is randomly determined
 
 
 def play_card(player, card, check=True, colour=""):
     global pile, hands, order_of_play, current_player, no_of_players, current_colour
-    if determine_playable(player, card) or not check:
+    if not check or determine_playable(player, card):
         pile.append(card)
         if check:
             hands[player].remove(card)
@@ -64,7 +61,7 @@ def play_card(player, card, check=True, colour=""):
                     current_player = 0
             if list(card)[1] == "+":
                 for i in range(2):
-                    draw_card(player + 1, cont=False)
+                    draw_card(player, cont=False)
                 current_player += 1
                 if current_player >= no_of_players:
                     current_player = 0
@@ -74,7 +71,7 @@ def play_card(player, card, check=True, colour=""):
             current_colour = colour
             if list(card)[1] == "+":
                 for i in range(4):
-                    draw_card(player + 1, cont=False)
+                    draw_card(player, cont=False)
         current_player = player + 1
         if current_player >= no_of_players:
             current_player = 0
