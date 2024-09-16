@@ -1,5 +1,5 @@
 import uno_game
-import uno_ml_strategies
+#import uno_ml_strategies
 import datetime
 import random
 

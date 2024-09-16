@@ -75,7 +75,7 @@ def play_card(player, card, check=True, colour=""):
         current_player = player + 1
         if current_player >= no_of_players:
             current_player = 0
-        if len(hands[player]) <= 0:
+        if check and len(hands[player]) == 0:
             print("Game won by "+str(player))
             return "win by "+str(player)
     else:
