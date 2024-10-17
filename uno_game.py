@@ -16,6 +16,14 @@ class NoMoreCardsError(Exception):  # Define the exception used if there are no 
     pass  # No action is required so nothing is done
 
 
+def send(player, message):
+    print(message)
+
+
+def request(player):
+    return input()
+
+
 def create_deck():  # Define a function to generate the cards in the game
     global deck  # Use the global variable deck to store all the cards in
     deck = []  # Reset the deck to empty
@@ -51,6 +59,9 @@ def play_card(player, card, check=True, colour=""):
             hands[player].remove(card)
         else:
             deck.remove(card)
+        current_player = player + 1
+        if current_player >= no_of_players:
+            current_player = 0
         if list(card)[0] != "w":
             current_colour = list(card)[0]
             if list(card)[1] == "r":
@@ -61,22 +72,23 @@ def play_card(player, card, check=True, colour=""):
                     current_player = 0
             if list(card)[1] == "+":
                 for i in range(2):
-                    draw_card(player, cont=False)
+                    draw_card(current_player, cont=False)
                 current_player += 1
                 if current_player >= no_of_players:
                     current_player = 0
         else:
             if colour == "":
-                colour = input("What colour? ")
+                send(player, "What colour? ")
+                colour = request(player)
             current_colour = colour
             if list(card)[1] == "+":
                 for i in range(4):
-                    draw_card(player, cont=False)
-        current_player = player + 1
-        if current_player >= no_of_players:
-            current_player = 0
+                    draw_card(current_player, cont=False)
+                current_player += 1
+                if current_player >= no_of_players:
+                    current_player = 0
         if check and len(hands[player]) == 0:
-            print("Game won by "+str(player))
+            send("Game won by "+str(player))
             return "win by "+str(player)
     else:
         print("You can't play that card")

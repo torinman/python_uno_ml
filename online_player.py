@@ -1,8 +1,8 @@
-import uno_game
+import json
 import socket
 from sys import argv
 import threading
-from json import *
+
 
 def receiver(clientsocket):
     while True:
@@ -10,8 +10,32 @@ def receiver(clientsocket):
         if msg == '':
             print("disconnected from host")
             break
-        print(msg)
+        elif msg[0] == "{":
+            j = json.loads(msg.replace("'", "\""))
+            for key in j.keys():
+                if key == "hand":
+                    hand = j["hand"]
+                    print("Your hand is:", hand)
+                elif key == "turn":
+                    print("It is", j["turn"], "'s go.")
+                elif key == "start":
+                    started = True
+                    print(j["start"], "has started the game.")
+                elif key == "top":
+                    topcard = j["top"]
+                    print("The top card is a", topcard)
+                elif key == "colour":
+                    colour = j["colour"]
+                    print("The current colour is "+j["colour"])
+            #print(j["start"], "has started the game. Your hand is:", hand, "It is", j["turn"], "'s go. The top card is a", j["top"], ". The current colour is "+j["colour"])
+        else:
+            print(msg)
     clientsocket.close()
+
+hand = []
+topcard = ""
+colour = ""
+started = False
 
 if "-ip" in argv: # read arguments
     ip = argv[argv.index("-ip")+1]

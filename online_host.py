@@ -4,14 +4,26 @@ import threading
 import time
 from sys import argv
 
+from uno_game import current_player
+
+
+def socketinput(player):
+    return input()
+
+def socketsendmessage(player, message):
+    clients[player][0].send(str.encode(message))
+
+uno_game.request = socketinput
+uno_game.send = socketsendmessage
 
 def on_new_client(clientsocket, addr):
     global clients, names, started
     while True:
         name = clientsocket.recv(1024).decode()
-        if name in names:
+        if name in names or name[0] == "{":
             clientsocket.send("declined".encode())
         else:
+            number = len(names)
             names += [name]
             clientsocket.send("accepted".encode())
             break
@@ -22,6 +34,9 @@ def on_new_client(clientsocket, addr):
     clientsocket.send(("Current online users: "+", ".join(names)).encode())
     while True:
         msg = clientsocket.recv(1024).decode()
+        print(addr, " aka: ", name, " sent: ", msg)
+        for client in clients:
+            client[0].send(str.encode(name + ": " + msg))
         if msg == '':
             print("Disconnected from "+str(addr)+" aka: "+name)
             names.remove(name)
@@ -32,10 +47,39 @@ def on_new_client(clientsocket, addr):
             uno_game.deal(7, len(clients))
             uno_game.play_card(uno_game.current_player, uno_game.deck[0], check=False)
             for i in range(len(clients)):
-                clients[i][0].send(str.encode("{'start': "+name+"\n'turn': "+names[uno_game.current_player]+"\n'hand': "+str(uno_game.hands[i])+"}"))
-        print(addr, " aka: ", name, " sent: ", msg)
-        for client in clients:
-            client[0].send(str.encode(name+": "+msg))
+                clients[i][0].send(str.encode("{'start': '"+name+"','turn': '"+names[uno_game.current_player]+"','hand': "+str(uno_game.hands[i])+", 'top': '"+uno_game.pile[-1]+"', 'colour': '"+uno_game.current_colour+"'}"))
+        elif msg[:4] == "play":
+            print("play request")
+            if started:
+                print("game started")
+                if uno_game.current_player == number:
+                    print("correct player", uno_game.hands[number])
+                    if msg[5:] == "nothing":
+                        uno_game.draw_card(number)
+                        for i in range(len(clients)):
+                            clients[i][0].send(str.encode(
+                                "{'play': '" + name + "','turn': '" + names[uno_game.current_player] + "','hand': " + str(
+                                    uno_game.hands[i]) + ", 'top': '" + uno_game.pile[
+                                    -1] + "', 'colour': '" + uno_game.current_colour + "'}"))
+                    elif msg[5:] in uno_game.hands[number]:
+                        print("card in hand")
+                        uno_game.play_card(number, msg[5:])
+                        for i in range(len(clients)):
+                            clients[i][0].send(str.encode(
+                                "{'play': '" + name + "','turn': '" + names[uno_game.current_player] + "','hand': " + str(
+                                    uno_game.hands[i]) + ", 'top': '" + uno_game.pile[
+                                    -1] + "', 'colour': '" + uno_game.current_colour + "'}"))
+                elif msg[5:] == uno_game.pile[-1]:
+                    print("leap in")
+                    if msg[5:] in uno_game.hands[number]:
+                        print("card in hand")
+                        uno_game.play_card(number, msg[5:])
+                        for i in range(len(clients)):
+                            clients[i][0].send(str.encode(
+                                "{'play': '" + name + "','turn': '" + names[
+                                    uno_game.current_player] + "','hand': " + str(
+                                    uno_game.hands[i]) + ", 'top': '" + uno_game.pile[
+                                    -1] + "', 'colour': '" + uno_game.current_colour + "'}"))
     clients.remove((clientsocket, addr))
     for client in clients:
         client[0].send((name+" has disconnected").encode())
@@ -43,7 +87,7 @@ def on_new_client(clientsocket, addr):
 
 started = False
 uno_game.create_deck()
-host = socket.gethostbyname(socket.gethostname()) # G et local machine name
+host = "192.168.20.126"#socket.gethostbyname(socket.gethostname()) # Get local machine name
 
 s = socket.socket()         # Create a socket object
 try:
